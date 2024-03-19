@@ -47,10 +47,10 @@ function App() {
                 const reader = new FileReader();
                 reader.onload = () => {
                   setSelectedImage(reader.result);
-                  setOnLoading(false);
                   setProcessImage(false);
                 };
                 reader.readAsDataURL(imgWithoutBg);
+                setOnLoading(false);
               }}
               style={{ display: "none" }} // Hide the file input
             />
@@ -205,7 +205,7 @@ function Editor(props) {
 
               {/* downloading assets progress bar*/}
               {props.onLoading && !props.processImage && (
-                <div class="w-full bg-gray-200 rounded-full dark:bg-gray-700">
+                <div class="w-full bg-gray-200 rounded-full">
                   <div
                     class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full"
                     style={{ width: `${props.removalProgress}%` }}

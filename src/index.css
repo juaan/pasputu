@@ -20,4 +20,5 @@ code {
 
 .wrapper {
   max-width: 480px;
+  overflow-x: hidden;
 }
