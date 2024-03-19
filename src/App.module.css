@@ -1,0 +1,34 @@
+.App {
+  text-align: center;
+  width: 100%;
+}
+
+.header {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.link {
+  color: #b318f0;
+}
+
+.titleGradient {
+  font-size: 72px;
+  background: -webkit-linear-gradient(#ffad98, #6ddbff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
