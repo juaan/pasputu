@@ -2,6 +2,11 @@
 
 An open source app that offers a simple and cost-effective solution for background removal tasks without compromising data privacy. All of the process is handled in client side, using [imgly](https://github.com/imgly/background-removal-js) library to execute background removal process
 
+## Todo
+- [ ] fix slider functionality
+- [ ] tune the library to give better result and speed
+- [ ] its stuck in processing when executed in ios web browser
+
 ## Usage
 
 Those templates dependencies are maintained via [pnpm](https://pnpm.io) via `pnpm up -Lri`.
