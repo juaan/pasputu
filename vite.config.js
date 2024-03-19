@@ -12,6 +12,10 @@ export default defineConfig({
     solidPlugin(),
   ],
   server: {
+    headers: {
+      "Cross-Origin-Embedder-Policy": "require-corp",
+      "Cross-Origin-Opener-Policy": "same-origin",
+    },
     port: 3000,
   },
   build: {
