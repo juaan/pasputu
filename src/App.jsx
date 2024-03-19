@@ -27,8 +27,8 @@ function App() {
         <div class="wrapper bg-white rounded-lg px-6 py-6 ring-1 ring-slate-900/5 shadow-md mt-6">
           <div class={styles.titleGradient}>pasputu</div>
           <p class="text-slate-600 mt-8 text-sm tracking-wide">
-            simple app to replace your background using your photos or camera(on
-            development), and change with your desired background
+            simple open source app to replace your background using your photos or camera(on
+            development), and change it with your desired background.
           </p>
           <div>
             <input

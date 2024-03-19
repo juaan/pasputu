@@ -1,3 +1,7 @@
+## Pasputu
+
+An open source app that offers a simple and cost-effective solution for background removal tasks without compromising data privacy. All of the process is handled in client side, using [imgly](https://github.com/imgly/background-removal-js) library to execute background removal process
+
 ## Usage
 
 Those templates dependencies are maintained via [pnpm](https://pnpm.io) via `pnpm up -Lri`.
