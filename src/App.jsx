@@ -80,6 +80,7 @@ function App() {
         </div>
         <footer>
           <p class="text-slate-600 mt-8 text-sm tracking-wide">made with 🚬 by <a href="https://github.com/juaan/pasputu" class="text-blue-500">Juan</a></p>
+          <p class="text-slate-600 text-sm tracking-wide">inspired by <a href="https://www.editpasfoto.com/" class="text-blue-500">editpasfoto</a></p>
         </footer>
       </div>
     </div>
