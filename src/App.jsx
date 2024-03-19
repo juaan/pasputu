@@ -10,8 +10,8 @@ function App() {
 
   return (
     <div class={styles.App}>
-      <header class={styles.header}>
-        <div class="wrapper bg-white rounded-lg px-6 py-8 ring-1 ring-slate-900/5 shadow-xl">
+      <div class={styles.header}>
+        <div class="wrapper bg-white rounded-lg px-6 py-6 ring-1 ring-slate-900/5 shadow-md mt-6">
           <div class={styles.titleGradient}>pasputu</div>
           <p class="text-slate-600 mt-8 text-sm tracking-wide">
             simple app to replace your background using your photos or camera(on development), and
@@ -78,7 +78,10 @@ function App() {
           </div>
           <Editor image={selectedImage()} fileName={fileName()} onLoading={onLoading} />
         </div>
-      </header>
+        <footer>
+          <p class="text-slate-600 mt-8 text-sm tracking-wide">made with 🚬 by <a href="https://github.com/juaan/pasputu" class="text-blue-500">Juan</a></p>
+        </footer>
+      </div>
     </div>
   );
 }
@@ -173,7 +176,7 @@ function Editor(props) {
         <div class="px-8 text-start">
           <label
             for="default-range"
-            class="block text-sm font-medium text-gray-900 dark:text-white"
+            class="block text-sm font-medium text-gray-900"
           >
             Background
           </label>
@@ -185,7 +188,7 @@ function Editor(props) {
         <div class="px-8 text-start">
           <label
             for="default-range"
-            class="block text-sm font-medium text-gray-900 dark:text-white"
+            class="block text-sm font-medium text-gray-900"
           >
             Ratio
           </label>
@@ -198,7 +201,7 @@ function Editor(props) {
       <div class="px-8 w-full text-start">
         <label
           for="default-range"
-          class="block text-sm font-medium text-gray-900 dark:text-white"
+          class="block text-sm font-medium text-gray-900"
         >
           Vertical
         </label>
@@ -209,13 +212,13 @@ function Editor(props) {
           type="range"
           max="200"
           value={`${getVert()}`}
-          class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+          class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
         ></input>
       </div>
       <div class="px-8 w-full text-start">
         <label
           for="default-range"
-          class="block text-sm font-medium text-gray-900 dark:text-white"
+          class="block text-sm font-medium text-gray-900"
         >
           Horizontal
         </label>
@@ -226,13 +229,13 @@ function Editor(props) {
           onInput={(e) => setHoriz(e.target.value)}
           type="range"
           value={`${getHoriz()}`}
-          class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+          class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
         ></input>
       </div>
       <div class="px-8 w-full text-start">
         <label
           for="default-range"
-          class="block text-sm font-medium text-gray-900 dark:text-white"
+          class="block text-sm font-medium text-gray-900"
         >
           Zoom
         </label>
@@ -243,7 +246,7 @@ function Editor(props) {
           step="0.05"
           value={scale()}
           onInput={(e) => setScale(e.target.value)}
-          class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+          class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
         ></input>
       </div>
 
@@ -263,7 +266,7 @@ function DropdownSelector(props) {
     <div>
       <select
         onChange={(e) => props.onDataChange(e)}
-        class="py-2 text-sm text-gray-700 dark:text-gray-200"
+        class="py-2 text-sm text-gray-700"
       >
         <Index each={props.opts}>
           {(opt, _) => <option value={opt()}>{opt}</option>}
