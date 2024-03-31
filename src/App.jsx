@@ -127,7 +127,7 @@ function App() {
              because of the resource constraints, for now this web app is only working on android and desktop browser
           </p>
         )}
-        {!isIOS && (
+        {!isIOS() && (
           <div class="wrapper bg-white rounded-lg px-6 py-6 ring-1 ring-slate-900/5 shadow-md mt-6">
             {cameraStream() && (
               <div style={{ position: "relative" }}>
@@ -150,7 +150,7 @@ function App() {
                   }}
                   onClick={capturePicture}
                 ></button>
-                {isMobile && (
+                {isMobile() && (
                   <button
                     style={{
                       position: "absolute",
