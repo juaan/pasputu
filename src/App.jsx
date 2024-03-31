@@ -34,22 +34,7 @@ function App() {
     canvas.width = camRef.videoWidth;
     canvas.height = camRef.videoHeight;
     canvas.getContext("2d").drawImage(camRef, 0, 0, canvas.width, canvas.height);
-    camRef.remove();
-    setCameraStream(null)
-    setRemovalProgress(0);
-    setSelectedImage("");
-    setOnLoading(true);
-    const imgWithoutBg = await removeBackground(
-      canvas.toDataURL("image/png"),
-      configRemoveBg
-    );
-    const reader = new FileReader();
-    reader.onload = () => {
-      setSelectedImage(reader.result);
-      setProcessImage(false);
-    };
-    reader.readAsDataURL(imgWithoutBg);
-    setOnLoading(false);
+    processBgRemoval(canvas.toDataURL("image/png"))
   };
 
   let isMobile = () => /Mobi|Android/i.test(navigator.userAgent);
@@ -62,7 +47,26 @@ function App() {
     }
   });
 
-  let configRemoveBg = {
+  const processBgRemoval = async (image) => {
+      camRef?.remove();
+      setCameraStream(null)
+      setRemovalProgress(0);
+      setSelectedImage("");
+      setOnLoading(true);
+      const imgWithoutBg = await removeBackground(
+        image,
+        configRemoveBg
+      );
+      const reader = new FileReader();
+      reader.onload = () => {
+        setSelectedImage(reader.result);
+        setProcessImage(false);
+      };
+      reader.readAsDataURL(imgWithoutBg);
+      setOnLoading(false);
+  }
+
+  const configRemoveBg = {
     progress: (key, current, total) => {
       const progress = ((current / total) * 100).toFixed(0);
       setRemovalProgress(progress);
@@ -113,25 +117,7 @@ function App() {
               type="file"
               id="fileInput"
               accept="image/*"
-              onChange={async (e) => {
-                camRef.remove();
-                setCameraStream(null)
-                setRemovalProgress(0);
-                setSelectedImage("");
-                setOnLoading(true);
-                const file = e.target.files[0];
-                const imgWithoutBg = await removeBackground(
-                  file,
-                  configRemoveBg
-                );
-                const reader = new FileReader();
-                reader.onload = () => {
-                  setSelectedImage(reader.result);
-                  setProcessImage(false);
-                };
-                reader.readAsDataURL(imgWithoutBg);
-                setOnLoading(false);
-              }}
+              onChange={(e) => processBgRemoval(e.target.files[0])}
               style={{ display: "none" }} // Hide the file input
             />
             <div class="mt-8 flex items-center justify-center gap-x-6">
