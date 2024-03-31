@@ -108,7 +108,7 @@ function App() {
     },
   };
 
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isIOS =  () => /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   onCleanup(() => {
     if (cameraStream()) {
@@ -122,7 +122,7 @@ function App() {
     <div class={styles.App}>
       <div class={styles.header}>
         <div class={styles.titleGradient}>pasputu</div>
-        {isIOS && (
+        {isIOS() && (
           <p class="text-slate-600 mt-8 text-sm tracking-wide">
              because of the resource constraints, for now this web app is only working on android and desktop browser
           </p>
