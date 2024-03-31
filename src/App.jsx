@@ -12,11 +12,13 @@ function App() {
   const [cameraStream, setCameraStream] = createSignal(null);
 
   let camRef;
+
   // Function to initialize the camera
   const initializeCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       setCameraStream(stream);
+      currentStream = stream;
     } catch (error) {
       console.error("Error accessing the camera:", error);
     }
@@ -24,7 +26,7 @@ function App() {
 
   createEffect(() => {
     if (cameraStream() !== null) {
-      camRef.srcObject = cameraStream()
+      camRef.srcObject = cameraStream();
     }
   });
 
@@ -33,11 +35,80 @@ function App() {
     const canvas = document.createElement("canvas");
     canvas.width = camRef.videoWidth;
     canvas.height = camRef.videoHeight;
-    canvas.getContext("2d").drawImage(camRef, 0, 0, canvas.width, canvas.height);
-    processBgRemoval(canvas.toDataURL("image/png"))
+    canvas
+      .getContext("2d")
+      .drawImage(camRef, 0, 0, canvas.width, canvas.height);
+    processBgRemoval(canvas.toDataURL("image/png"));
   };
 
-  let isMobile = () => /Mobi|Android/i.test(navigator.userAgent);
+  const isMobile = () => /Mobi|Android/i.test(navigator.userAgent);
+
+  const processBgRemoval = async (image) => {
+    camRef?.remove();
+    setCameraStream(null);
+    setRemovalProgress(0);
+    setSelectedImage("");
+    setOnLoading(true);
+    const imgWithoutBg = await removeBackground(image, configRemoveBg);
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      setSelectedImage(reader.result);
+      setProcessImage(false);
+    };
+    reader.readAsDataURL(imgWithoutBg);
+    setOnLoading(false);
+  };
+
+  const switchCamera = async () => {
+    try {
+      // Get the current stream
+      const currentStream = cameraStream();
+
+      if (currentStream) {
+        currentStream.getTracks().forEach((track) => track.stop());
+      }
+
+      // Get all available video devices
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(
+        (device) => device.kind === "videoinput"
+      );
+
+      const isFrontCam = currentStream
+        ?.getVideoTracks()[0]
+        .label.includes("front");
+
+      const nextCam = isFrontCam ? "back" : "front";
+
+      const nextCamIdx = videoDevices.findIndex((device) =>
+        device.label.includes(nextCam)
+      );
+
+      // Get the new stream with the next camera
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { deviceId: { exact: videoDevices[nextCamIdx].deviceId } },
+      });
+
+      setCameraStream(stream);
+    } catch (error) {
+      console.error("Error switching camera:", error);
+    }
+  };
+
+  const configRemoveBg = {
+    progress: (key, current, total) => {
+      const progress = ((current / total) * 100).toFixed(0);
+      setRemovalProgress(progress);
+      if (key == "compute:inference" && progress < 100) {
+        setProcessImage(true);
+      }
+
+      console.log(`Downloading ${key}: ${current} of ${total}`);
+    },
+  };
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   onCleanup(() => {
     if (cameraStream()) {
@@ -47,133 +118,148 @@ function App() {
     }
   });
 
-  const processBgRemoval = async (image) => {
-      camRef?.remove();
-      setCameraStream(null)
-      setRemovalProgress(0);
-      setSelectedImage("");
-      setOnLoading(true);
-      const imgWithoutBg = await removeBackground(
-        image,
-        configRemoveBg
-      );
-      const reader = new FileReader();
-      reader.onload = () => {
-        setSelectedImage(reader.result);
-        setProcessImage(false);
-      };
-      reader.readAsDataURL(imgWithoutBg);
-      setOnLoading(false);
-  }
-
-  const configRemoveBg = {
-    progress: (key, current, total) => {
-      const progress = ((current / total) * 100).toFixed(0);
-      setRemovalProgress(progress);
-      if (key === "compute:inference" && progress < 100) {
-        setProcessImage(true);
-      }
-      console.log(`Downloading ${key}: ${current} of ${total}`);
-    },
-  };
-
   return (
     <div class={styles.App}>
       <div class={styles.header}>
         <div class={styles.titleGradient}>pasputu</div>
-        <div class="wrapper bg-white rounded-lg px-6 py-6 ring-1 ring-slate-900/5 shadow-md mt-6">
-          {cameraStream() && (
-            <div style={{ position: "relative" }}>
-              <video
-                autoPlay
-                ref={camRef}
-              ></video>
-              <button
-                style={{
-                  position: "absolute",
-                  bottom: "20px",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  width: "40px",
-                  height: "40px",
-                  "border-radius": "50%",
-                  "background-color": "#FF0000",
-                  border: "5px solid #fff",
-                  cursor: "pointer",
-                  display: "flex",
-                  "justify-content": "center",
-                  "align-items": "center",
-                }}
-                onClick={() => capturePicture()}
-              ></button>
-            </div>
-          )}
+        {isIOS && (
           <p class="text-slate-600 mt-8 text-sm tracking-wide">
-            simple open source app to replace your background using your photos
-            or camera, and change it with your desired background.
+             because of the resource constraints, for now this web app is only working on android and desktop browser
           </p>
-          <div>
-            <input
-              type="file"
-              id="fileInput"
-              accept="image/*"
-              onChange={(e) => processBgRemoval(e.target.files[0])}
-              style={{ display: "none" }} // Hide the file input
-            />
-            <div class="mt-8 flex items-center justify-center gap-x-6">
-              {!isMobile() && (
-                <>
-                  <Show
-                    when={!onLoading()}
-                    fallback={
-                      <button
-                        class="bg-cyan-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm rounded-md cursor-not-allowed opacity-70"
-                        disabled
-                      >
-                        Processing...
-                      </button>
-                    }
-                  >
-                    <button
-                      onClick={initializeCamera}
-                      class="rounded-md bg-cyan-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-cyan-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                    >
-                      Take photo
-                    </button>
-                  </Show>
-
-                  <p class="text-slate-500"> or </p>
-                </>
-              )}
-              <Show
-                when={!onLoading()}
-                fallback={
-                  <button
-                    class="bg-cyan-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm rounded-md cursor-not-allowed opacity-70"
-                    disabled
-                  >
-                    Processing...
-                  </button>
-                }
-              >
+        )}
+        {!isIOS && (
+          <div class="wrapper bg-white rounded-lg px-6 py-6 ring-1 ring-slate-900/5 shadow-md mt-6">
+            {cameraStream() && (
+              <div style={{ position: "relative" }}>
+                <video autoPlay ref={camRef}></video>
                 <button
-                  onClick={() => {
-                    document.getElementById("fileInput").click();
+                  style={{
+                    position: "absolute",
+                    bottom: "20px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: "40px",
+                    height: "40px",
+                    "border-radius": "50%",
+                    "background-color": "#FF0000",
+                    border: "5px solid #fff",
+                    cursor: "pointer",
+                    display: "flex",
+                    "justify-content": "center",
+                    "align-items": "center",
                   }}
-                  class="rounded-md bg-cyan-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-cyan-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  onClick={capturePicture}
+                ></button>
+                {isMobile && (
+                  <button
+                    style={{
+                      position: "absolute",
+                      bottom: "20px",
+                      left: "90%",
+                      transform: "translateX(-50%)",
+                      cursor: "pointer",
+                      display: "flex",
+                      "justify-content": "center",
+                      "align-items": "center",
+                    }}
+                    onClick={switchCamera}
+                  >
+                    <svg
+                      width="30"
+                      height="30"
+                      viewBox="0 0 49 49"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M34.6063 12.3521H14.4958L17.9667 7.14583C18.375 6.53333 18.9875 6.22708 19.7021 6.22708H29.5021C30.2167 6.22708 30.8292 6.53333 31.2375 7.14583L34.6063 12.3521Z"
+                        fill="white"
+                      />
+                      <path
+                        d="M14.2917 11.2292H8.16666V9.39166C8.16666 8.67707 8.67707 8.16666 9.39166 8.16666H13.0667C13.7812 8.16666 14.2917 8.67707 14.2917 9.39166V11.2292Z"
+                        fill="white"
+                      />
+                      <path
+                        d="M40.8333 42.875H8.16666C5.92083 42.875 4.08333 41.0375 4.08333 38.7917V14.2917C4.08333 12.0458 5.92083 10.2083 8.16666 10.2083H40.8333C43.0792 10.2083 44.9167 12.0458 44.9167 14.2917V38.7917C44.9167 41.0375 43.0792 42.875 40.8333 42.875Z"
+                        fill="white"
+                      />
+                      <path
+                        d="M34.7083 25.5208C34.7083 19.9062 30.1146 15.3125 24.5 15.3125C22.05 15.3125 19.8042 16.1292 18.0688 17.5583L19.2938 19.1917C20.7229 18.0687 22.4583 17.3542 24.5 17.3542C28.9917 17.3542 32.6667 21.0292 32.6667 25.5208H29.0938L33.6875 31.2375L38.2813 25.5208H34.7083Z"
+                        fill="black"
+                      />
+                      <path
+                        d="M29.7062 31.85C28.2771 32.9729 26.4396 33.6875 24.5 33.6875C20.0083 33.6875 16.3333 30.0125 16.3333 25.5208H19.9062L15.3125 19.8042L10.7188 25.5208H14.2917C14.2917 31.1354 18.8854 35.7292 24.5 35.7292C26.95 35.7292 29.1958 34.9125 30.9312 33.4833L29.7062 31.85Z"
+                        fill="black"
+                      />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            )}
+            <p class="text-slate-600 mt-8 text-sm tracking-wide">
+              simple open source app to replace your background using your
+              photos or camera, and change it with your desired background.
+            </p>
+            <div>
+              <input
+                type="file"
+                id="fileInput"
+                accept="image/*"
+                onChange={(e) => processBgRemoval(e.target.files[0])}
+                style={{ display: "none" }} // Hide the file input
+              />
+              <div class="mt-8 flex items-center justify-center gap-x-6">
+                <Show
+                  when={!onLoading()}
+                  fallback={
+                    <button
+                      class="bg-cyan-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm rounded-md cursor-not-allowed opacity-70"
+                      disabled
+                    >
+                      Processing...
+                    </button>
+                  }
                 >
-                  Upload image
-                </button>
-              </Show>
+                  <button
+                    onClick={initializeCamera}
+                    class="rounded-md bg-cyan-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-cyan-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  >
+                    Take photo
+                  </button>
+                </Show>
+
+                <p class="text-slate-500"> or </p>
+                <Show
+                  when={!onLoading()}
+                  fallback={
+                    <button
+                      class="bg-cyan-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm rounded-md cursor-not-allowed opacity-70"
+                      disabled
+                    >
+                      Processing...
+                    </button>
+                  }
+                >
+                  <button
+                    onClick={() => {
+                      document.getElementById("fileInput").click();
+                    }}
+                    class="rounded-md bg-cyan-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-cyan-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  >
+                    Upload image
+                  </button>
+                </Show>
+              </div>
             </div>
+            <Editor
+              image={selectedImage()}
+              onLoading={onLoading()}
+              removalProgress={removalProgress()}
+              processImage={processImage()}
+            />
           </div>
-          <Editor
-            image={selectedImage()}
-            onLoading={onLoading()}
-            removalProgress={removalProgress()}
-            processImage={processImage()}
-          />
-        </div>
+        )}
+
         <footer>
           <p class="text-slate-600 mt-8 text-sm tracking-wide">
             made with 🚬 by{" "}
